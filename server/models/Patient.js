@@ -260,8 +260,8 @@ PatientSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to generate health card ID
-PatientSchema.methods.generateHealthCardId = function() {
+// Static method to generate health card ID
+PatientSchema.statics.generateHealthCardId = function() {
   const timestamp = Date.now().toString();
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `AC${timestamp.slice(-6)}${random}`;

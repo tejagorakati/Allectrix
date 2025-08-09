@@ -25,7 +25,8 @@ function encrypt(text) {
   
   try {
     const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipher(ALGORITHM, ENCRYPTION_KEY);
+    const key = Buffer.from(ENCRYPTION_KEY, 'hex');
+    const cipher = crypto.createCipherGCM(ALGORITHM, key, iv);
     cipher.setAAD(Buffer.from('arogya-card-system'));
     
     let encrypted = cipher.update(text, 'utf8', 'hex');
@@ -52,7 +53,8 @@ function decrypt(encryptedData) {
   
   try {
     const { encrypted, iv, authTag } = encryptedData;
-    const decipher = crypto.createDecipher(ALGORITHM, ENCRYPTION_KEY);
+    const key = Buffer.from(ENCRYPTION_KEY, 'hex');
+    const decipher = crypto.createDecipherGCM(ALGORITHM, key, Buffer.from(iv, 'hex'));
     
     decipher.setAAD(Buffer.from('arogya-card-system'));
     decipher.setAuthTag(Buffer.from(authTag, 'hex'));

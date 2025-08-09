@@ -33,14 +33,14 @@ const auth = async (req, res, next) => {
     }
 
     // Check if user account is active
-    if (user.userType === 'Patient' && !user.isActive) {
+    if (decoded.userType === 'Patient' && !user.isActive) {
       return res.status(401).json({
         success: false,
         message: 'Account is deactivated.'
       });
     }
 
-    if (user.userType === 'Doctor' && user.accountStatus !== 'active') {
+    if (decoded.userType === 'Doctor' && user.accountStatus !== 'active') {
       return res.status(401).json({
         success: false,
         message: 'Doctor account is not active.'

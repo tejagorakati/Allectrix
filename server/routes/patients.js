@@ -66,7 +66,7 @@ router.post('/register', [
     }
 
     // Generate unique health card ID
-    const healthCardId = generateHealthCardId();
+    const healthCardId = Patient.generateHealthCardId();
 
     // Generate QR code with health card data
     const qrData = {
