@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Patient {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  phone           String   @unique
+  dateOfBirth     DateTime
+  healthCardId    String   @unique
+  qrCodeData      String
+  biometricData   String?  // JSON string for face/fingerprint data
+  profilePicture  String?
+  emergencyContact String?
+  bloodGroup      String?
+  allergies       String?
+  chronicDiseases String?
+  isCardBlocked   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  medicalRecords  MedicalRecord[]
+  accessLogs      AccessLog[]
+  notifications   Notification[]
+  emergencyAccess EmergencyAccess[]
+}
+
+model Doctor {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  phone           String
+  licenseNumber   String   @unique
+  specialization  String
+  isActive        Boolean  @default(true)
+  hashedPassword  String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  medicalRecords MedicalRecord[]
+  accessLogs     AccessLog[]
+}
+
+model Admin {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  hashedPassword String
+  role           String   @default("admin")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model MedicalRecord {
+  id          String   @id @default(cuid())
+  patientId   String
+  doctorId    String
+  diagnosis   String
+  prescription String?
+  testResults String?
+  notes       String?
+  attachments String?  // JSON array of file URLs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctor  Doctor  @relation(fields: [doctorId], references: [id])
+}
+
+model AccessLog {
+  id            String   @id @default(cuid())
+  patientId     String
+  doctorId      String?
+  accessType    String   // "view", "edit", "emergency"
+  ipAddress     String?
+  userAgent     String?
+  location      String?
+  blockchainTxHash String?
+  createdAt     DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctor  Doctor? @relation(fields: [doctorId], references: [id])
+}
+
+model EmergencyAccess {
+  id          String   @id @default(cuid())
+  patientId   String
+  accessorName String  // Name of emergency personnel
+  accessMethod String  // "biometric", "manual"
+  ipAddress   String?
+  location    String?
+  createdAt   DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  patientId String
+  type      String   // "access", "update", "emergency", "card_blocked"
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+model UploadedFile {
+  id         String   @id @default(cuid())
+  filename   String
+  originalName String
+  mimeType   String
+  size       Int
+  url        String
+  uploadedBy String
+  createdAt  DateTime @default(now())
+}
