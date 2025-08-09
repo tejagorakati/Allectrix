@@ -1,0 +1,229 @@
+// Prisma schema for Arogya Card MVP
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum CardStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum ActorType {
+  DOCTOR
+  ADMIN
+  SYSTEM
+  EMERGENCY
+}
+
+enum ActionType {
+  READ
+  CREATE_RECORD
+  UPDATE_RECORD
+  BLOCK_CARD
+  UNBLOCK_CARD
+  EMERGENCY_READ
+  LOGIN
+  FAILED_LOGIN
+}
+
+enum RecordType {
+  DIAGNOSIS
+  PRESCRIPTION
+  TEST_RESULT
+  NOTE
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum OnChainStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+// Models
+model User {
+  id                 String               @id @default(cuid())
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  fullName           String
+  email              String?              @unique
+  phone              String?              @unique
+  dateOfBirth        DateTime
+  passwordHash       String?              // optional for patient portal login later
+
+  biometricToken     String?              // placeholder for MVP biometric link
+
+  bloodGroup         String?
+  allergiesJson      Json?
+  chronicDiseasesJson Json?
+
+  emergencyContacts  EmergencyContact[]
+
+  // Privacy & preferences
+  allowEmergencyRead Boolean              @default(true)
+  allowDoctorEdit    Boolean              @default(true)
+  notificationEmail  Boolean              @default(true)
+  notificationSms    Boolean              @default(true)
+  notificationPush   Boolean              @default(true)
+
+  card               HealthCard?
+  records            MedicalRecord[]
+  accessLogs         AccessLog[]
+  notifications      Notification[]
+  doctorAccesses     DoctorAccess[]
+}
+
+model EmergencyContact {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  name      String
+  relation  String
+  phone     String
+}
+
+model HealthCard {
+  id           String     @id @default(cuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  cardId       String     @unique
+  status       CardStatus @default(ACTIVE)
+  qrCodeData   String     // base64 PNG or data URL
+  blockedAt    DateTime?
+  lostReportedAt DateTime?
+
+  user       User   @relation(fields: [userId], references: [id])
+  userId     String @unique
+}
+
+model Doctor {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  fullName     String
+  email        String   @unique
+  passwordHash String
+  totpSecret   String?
+  isActive     Boolean  @default(true)
+
+  records      MedicalRecord[]
+  accessLogs   AccessLog[]
+  patientAccess DoctorAccess[]
+}
+
+model DoctorAccess {
+  id        String  @id @default(cuid())
+  doctor    Doctor  @relation(fields: [doctorId], references: [id])
+  doctorId  String
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  canEdit   Boolean @default(true)
+
+  @@unique([doctorId, userId])
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  email        String   @unique
+  fullName     String
+  passwordHash String
+  isSuper      Boolean  @default(false)
+  isActive     Boolean  @default(true)
+
+  accessLogs   AccessLog[]
+}
+
+model MedicalRecord {
+  id           String      @id @default(cuid())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  user         User        @relation(fields: [userId], references: [id])
+  userId       String
+
+  createdBy    Doctor?     @relation(fields: [doctorId], references: [id])
+  doctorId     String?
+
+  recordType   RecordType
+  title        String
+  notes        String?
+  dataJson     Json?
+
+  attachments  RecordFile[]
+}
+
+model RecordFile {
+  id         String   @id @default(cuid())
+  record     MedicalRecord @relation(fields: [recordId], references: [id])
+  recordId   String
+  filePath   String
+  fileName   String
+  mimeType   String
+  sizeBytes  Int
+}
+
+model AccessLog {
+  id           String      @id @default(cuid())
+  createdAt    DateTime    @default(now())
+
+  user         User?       @relation(fields: [userId], references: [id])
+  userId       String?
+
+  doctor       Doctor?     @relation(fields: [doctorId], references: [id])
+  doctorId     String?
+
+  admin        Admin?      @relation(fields: [adminId], references: [id])
+  adminId      String?
+
+  actorType    ActorType
+  action       ActionType
+  description  String?
+  ipAddress    String?
+  location     String?
+
+  // Hash-chain for immutable logging (MVP append-only ledger)
+  hash         String
+  prevHash     String?
+  dataHash     String
+  onChainStatus OnChainStatus @default(PENDING)
+}
+
+model Notification {
+  id           String              @id @default(cuid())
+  createdAt    DateTime            @default(now())
+
+  user         User                @relation(fields: [userId], references: [id])
+  userId       String
+
+  channel      NotificationChannel
+  type         String
+  message      String
+  status       NotificationStatus  @default(PENDING)
+  sentAt       DateTime?
+}
