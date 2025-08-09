@@ -11,14 +11,14 @@ export async function verifyPassword(password: string, hashedPassword: string): 
   return bcrypt.compare(password, hashedPassword)
 }
 
-export function generateToken(payload: any): string {
+export function generateToken(payload: Record<string, string | number | boolean>): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' })
 }
 
-export function verifyToken(token: string): any {
+export function verifyToken(token: string): Record<string, string | number | boolean> | null {
   try {
-    return jwt.verify(token, JWT_SECRET)
-  } catch (error) {
+    return jwt.verify(token, JWT_SECRET) as Record<string, string | number | boolean>
+  } catch {
     return null
   }
 }

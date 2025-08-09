@@ -3,10 +3,10 @@ import { prisma } from '@/lib/db'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { healthCardId: string } }
+  { params }: { params: Promise<{ healthCardId: string }> }
 ) {
   try {
-    const { healthCardId } = params
+    const { healthCardId } = await params
     const { accessorName, accessMethod } = await request.json()
 
     // Find the patient
@@ -47,7 +47,7 @@ export async function POST(
         patientId: patient.id,
         accessorName: accessorName || 'Unknown Emergency Personnel',
         accessMethod: accessMethod || 'manual',
-        ipAddress: request.ip || 'unknown',
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
         location: 'Emergency Access Point', // In production, get actual location
       },
     })

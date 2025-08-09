@@ -3,10 +3,10 @@ import { prisma } from '@/lib/db'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { healthCardId: string } }
+  { params }: { params: Promise<{ healthCardId: string }> }
 ) {
   try {
-    const { healthCardId } = params
+    const { healthCardId } = await params
 
     // Find the patient
     const patient = await prisma.patient.findUnique({
@@ -54,7 +54,7 @@ export async function POST(
       data: {
         patientId: patient.id,
         accessType: 'card_blocked',
-        ipAddress: request.ip || 'unknown',
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown',
       },
     })

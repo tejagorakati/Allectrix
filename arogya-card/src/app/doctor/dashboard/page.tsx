@@ -40,7 +40,7 @@ export default function DoctorDashboard() {
   useEffect(() => {
     checkAuthentication()
     fetchRecentAccess()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkAuthentication = async () => {
     const token = localStorage.getItem('doctorToken')
@@ -63,10 +63,10 @@ export default function DoctorDashboard() {
         localStorage.removeItem('doctorToken')
         router.push('/doctor/login')
       }
-    } catch (error) {
-      console.error('Auth check error:', error)
-      router.push('/doctor/login')
-    } finally {
+         } catch (err) {
+       console.error('Auth check error:', err)
+       router.push('/doctor/login')
+     } finally {
       setIsLoading(false)
     }
   }
@@ -86,9 +86,9 @@ export default function DoctorDashboard() {
         const data = await response.json()
         setRecentAccess(data.recentAccess)
       }
-    } catch (error) {
-      console.error('Error fetching recent access:', error)
-    }
+           } catch (err) {
+         console.error('Error fetching recent access:', err)
+       }
   }
 
   const startQRScanner = () => {
@@ -117,14 +117,14 @@ export default function DoctorDashboard() {
             } else {
               alert('Invalid QR code. Please scan a valid Arogya Card.')
             }
-          } catch (error) {
-            alert('Invalid QR code format.')
-          }
+                                  } catch {
+             alert('Invalid QR code format.')
+           }
           stopQRScanner()
         },
-        (error) => {
-          // Ignore scanning errors
-        }
+                 () => {
+           // Ignore scanning errors
+         }
       )
     }, 100)
   }
@@ -194,7 +194,7 @@ export default function DoctorDashboard() {
           {!showScanner ? (
             <div className="text-center py-8">
               <QrCodeIcon className="h-24 w-24 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 mb-4">Scan patient's QR code for quick access</p>
+              <p className="text-gray-600 mb-4">Scan patient&apos;s QR code for quick access</p>
               <button
                 onClick={startQRScanner}
                 className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"

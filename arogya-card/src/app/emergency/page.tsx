@@ -58,14 +58,14 @@ export default function EmergencyAccess() {
             } else {
               setError('Invalid QR code. Please scan a valid Arogya Card.')
             }
-          } catch (error) {
-            setError('Invalid QR code format.')
-          }
+                     } catch {
+             setError('Invalid QR code format.')
+           }
           stopQRScanner()
         },
-        (error) => {
-          // Ignore scanning errors
-        }
+                 () => {
+           // Ignore scanning errors
+         }
       )
     }, 100)
   }
@@ -99,10 +99,10 @@ export default function EmergencyAccess() {
         const error = await response.json()
         setError(error.message || 'Failed to access patient data')
       }
-    } catch (error) {
-      console.error('Error fetching emergency data:', error)
-      setError('Failed to access patient data')
-    } finally {
+         } catch (err) {
+       console.error('Error fetching emergency data:', err)
+       setError('Failed to access patient data')
+     } finally {
       setIsLoading(false)
     }
   }
@@ -130,9 +130,9 @@ export default function EmergencyAccess() {
           {!patientData && !showScanner && (
             <div className="text-center py-12">
               <QrCodeIcon className="h-24 w-24 text-gray-300 mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Scan Patient's QR Code</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Scan Patient&apos;s QR Code</h2>
               <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                Scan the QR code on the patient's Arogya Card to access critical medical information
+                Scan the QR code on the patient&apos;s Arogya Card to access critical medical information
                 for emergency treatment.
               </p>
               

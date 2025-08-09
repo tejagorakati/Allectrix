@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { 
   UserIcon, 
-  QrCodeIcon, 
   ShieldExclamationIcon, 
   DocumentDuplicateIcon,
   EyeIcon,
@@ -40,11 +39,7 @@ export default function HealthCard() {
   const [showSensitiveInfo, setShowSensitiveInfo] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
 
-  useEffect(() => {
-    fetchPatientData()
-  }, [healthCardId])
-
-  const fetchPatientData = async () => {
+  const fetchPatientData = useCallback(async () => {
     try {
       const response = await fetch(`/api/patient/card/${healthCardId}`)
       if (response.ok) {
@@ -60,7 +55,11 @@ export default function HealthCard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [healthCardId])
+
+  useEffect(() => {
+    fetchPatientData()
+  }, [fetchPatientData])
 
   const handleBlockCard = async () => {
     if (!window.confirm('Are you sure you want to block this health card? This action will prevent all access to your medical records.')) {
@@ -268,7 +267,7 @@ export default function HealthCard() {
               )}
             </div>
           ) : (
-            <p className="text-gray-500">Click "Show Details" to view sensitive medical information</p>
+            <p className="text-gray-500">Click &quot;Show Details&quot; to view sensitive medical information</p>
           )}
         </div>
 

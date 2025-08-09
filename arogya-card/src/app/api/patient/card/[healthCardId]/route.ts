@@ -3,10 +3,10 @@ import { prisma } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { healthCardId: string } }
+  { params }: { params: Promise<{ healthCardId: string }> }
 ) {
   try {
-    const { healthCardId } = params
+    const { healthCardId } = await params
 
     const patient = await prisma.patient.findUnique({
       where: {

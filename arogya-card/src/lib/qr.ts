@@ -11,8 +11,8 @@ export async function generateQRCode(data: string): Promise<string> {
       }
     })
     return qrCodeDataURL
-  } catch (error) {
-    console.error('Error generating QR code:', error)
+  } catch (err) {
+    console.error('Error generating QR code:', err)
     throw new Error('Failed to generate QR code')
   }
 }
@@ -20,7 +20,7 @@ export async function generateQRCode(data: string): Promise<string> {
 export function parseHealthCardData(qrData: string) {
   try {
     return JSON.parse(qrData)
-  } catch (error) {
+  } catch {
     // If it's not JSON, treat it as a simple health card ID
     return { healthCardId: qrData }
   }

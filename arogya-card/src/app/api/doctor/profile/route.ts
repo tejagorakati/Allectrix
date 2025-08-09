@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     const doctor = await prisma.doctor.findUnique({
       where: {
-        id: decoded.doctorId,
+        id: decoded.doctorId as string,
       },
       select: {
         id: true,
